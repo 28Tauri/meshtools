@@ -1,13 +1,14 @@
 # 
 # this connects to the specified node via IP, then prints every NeighborInfo and PaxCount packet that it hears
 # 
-import meshtastic.tcp_interface
-from meshtastic.serial_interface import SerialInterface
-from meshtastic import mesh_pb2, paxcount_pb2, BROADCAST_NUM
-from pubsub import pub
+import meshtastic.tcp_interface # type: ignore
+from meshtastic.serial_interface import SerialInterface # type: ignore
+from meshtastic import mesh_pb2, paxcount_pb2, BROADCAST_NUM # type: ignore
+from pubsub import pub # type: ignore
 from datetime import datetime
-import pytz
+import pytz # type: ignore
 import time
+import csv
 #
 # replace with your nodes IP
 #
