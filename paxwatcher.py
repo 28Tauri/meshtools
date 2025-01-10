@@ -1,5 +1,5 @@
 # 
-# this connects to the specified node via IP, then prints every NeighborInfo and PaxCounter packet that it hears
+# this connects to the specified node via IP, then prints every NeighborInfo and PaxCount packet that it hears
 # 
 import meshtastic.tcp_interface
 from meshtastic.serial_interface import SerialInterface
@@ -19,7 +19,6 @@ def idToHex(nodeId):
 def GetCurrentTime():
     utcmoment_naive = datetime.utcnow()
     utcmoment = utcmoment_naive.replace(tzinfo=pytz.utc)
-    localFormat = "%d-%m-%Y %H:%M:%S"
 #
 # replace with your nodes timezone city
 #
@@ -46,35 +45,16 @@ def onConnection(interface, topic=pub.AUTO_TOPIC):
     
 def onReceive(packet, interface): 
     if 'decoded' in packet:
-        if packet['decoded'].get('portnum') == 'NEIGHBORINFO_APP':
-            message = mesh_pb2.NeighborInfo()
-            payload_bytes = packet['decoded'].get('payload', b'')
-            message.ParseFromString(payload_bytes)
-            print(f"*          {packet['decoded'].get('portnum', 'N/A')} packet")
-            print("*          Time:", GetCurrentTime())
-            print("*          From:", GetNodeName(packet['from']))
-            print(f"*          SNR: {packet['rxSnr']} RSSI: {packet['rxRssi']}")
-            # Neighbor Information
-            print("           Neighbor Information:")
-            print(f"*          Node ID: {message.node_id} / {idToHex(message.node_id)}")
-            print(f"*          Last Sent By ID: {message.last_sent_by_id}")
-            print(f"*          Node Broadcast Interval (secs): {message.node_broadcast_interval_secs}")
-            print("*          Neighbors:")
-            for neighbor in message.neighbors:
-                print(f"      Neighbor ID: {neighbor.node_id} / {idToHex(neighbor.node_id)}")
-                print(f"        SNR: {neighbor.snr}")
-            print("*")
-        elif packet['decoded'].get('portnum') == 'PAXCOUNTER_APP':
+        if packet['decoded'].get('portnum') == 'PAXCOUNTER_APP':
             message = paxcount_pb2.Paxcount()
             payload_bytes = packet['decoded'].get('payload', b'')
             message.ParseFromString(payload_bytes)
             paxtotal = message.wifi + message.ble
             print(f"*          {packet['decoded'].get('portnum', 'N/A')} packet")
             print("*          Time:", GetCurrentTime())
-            print("*          From:", GetNodeName(packet['from']))
+            print("*          From:", GetNodeName(packet['from']), "uptime:", message.uptime)
             print(f"*          SNR: {packet['rxSnr']} RSSI: {packet['rxRssi']}")
-            print(f"*          uptime: {message.uptime}")
-            print("*          -Devices-")
+            print("*          Device count")
             print(f"*          wifi {message.wifi} / BLE: {message.ble} / PAXtotal: {paxtotal}")
             print("*")
 
