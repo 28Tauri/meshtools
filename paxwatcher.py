@@ -65,8 +65,8 @@ def onReceive(packet, interface):
             # here we build the array for what gets appended to the csv
             add_data = [now_time, who_from, message.uptime, packet['rxSnr'], message.wifi, message.ble, paxtotal]
             # open the file we saved OnConnect, in append mode, and we want newlines after each new tranche of data
-            with open(f'{fileprefix}_{timestamp}.csv', 'a', newline='\n') as f:
-                writer = csv.writer(file) # type: ignore
+            with open(f'{fileprefix}_{timestamp}.csv', 'a', newline='\n') as file:
+                writer = csv.writer(file)
                 writer.writerow(add_data)
             # also print all that to the screen in a structured format
             print(f"*          {packet['decoded'].get('portnum', 'N/A')} packet")
