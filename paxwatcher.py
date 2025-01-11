@@ -1,5 +1,5 @@
 # 
-# this connects to the specified node via IP, then prints every NeighborInfo and PaxCount packet that it hears
+# this connects to the specified node via IP, then prints every PaxCount packet to the screen, and logs to a csv file
 # 
 import meshtastic.tcp_interface # type: ignore
 from meshtastic.serial_interface import SerialInterface # type: ignore
@@ -9,11 +9,12 @@ from datetime import datetime
 import pytz # type: ignore
 import time
 import csv
-# test
 #
 # replace with your nodes IP
 #
 nodeip = "10.10.1.205"
+timestamp = int(time.time())
+fileprefix = 'pax'
 
 def idToHex(nodeId): 
     return '!' + hex(nodeId)[2:]
@@ -42,8 +43,13 @@ def onConnection(interface, topic=pub.AUTO_TOPIC):
     print ("*          PaxWatcher beta",)
     print ("*          Connected to " + GetNodeName(interface.myInfo.my_node_num))
     print ("*")
-    print ("* ", GetCurrentTime(),"*")
+    print ("* ", GetCurrentTime())
     print ("*")
+    # create a new csv file, named prefix_timestamp (note that timestamp is from runtime not OnConnect)
+    with open(
+    f'{fileprefix}_{timestamp}.csv', 'w', encoding='utf-8' 
+        ) as f:
+        f.write('time,from,uptime,snr,wifi,ble,total' + '\n')
     
 def onReceive(packet, interface): 
     if 'decoded' in packet:
@@ -52,9 +58,18 @@ def onReceive(packet, interface):
             payload_bytes = packet['decoded'].get('payload', b'')
             message.ParseFromString(payload_bytes)
             paxtotal = message.wifi + message.ble
+            now_time = GetCurrentTime()
+            who_from = GetNodeName(packet['from'])
+            # here we build the array for what gets appended to the csv
+            add_data = [now_time, who_from, message.uptime, packet['rxSnr'], message.wifi, message.ble, paxtotal]
+            # open the file we saved OnConnect, in append mode, and we want newlines after each new tranche of data
+            with open(f'{fileprefix}_{timestamp}.csv', 'a', newline='\n') as f:
+                writer = csv.writer(file)
+                writer.writerow(add_data)
+            # also print all that to the screen in a structured format
             print(f"*          {packet['decoded'].get('portnum', 'N/A')} packet")
-            print("*          Time:", GetCurrentTime())
-            print("*          From:", GetNodeName(packet['from']), "uptime:", message.uptime)
+            print("*          Time:", now_time)
+            print("*          From:", who_from, "uptime:", message.uptime)
             print(f"*          SNR: {packet['rxSnr']} RSSI: {packet['rxRssi']}")
             print("*          Device count")
             print(f"*          wifi {message.wifi} / BLE: {message.ble} / PAXtotal: {paxtotal}")
