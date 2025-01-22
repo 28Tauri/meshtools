@@ -11,10 +11,12 @@ from datetime import datetime
 import pytz 
 import time
 import csv
-#
-# replace with your nodes IP
-#
-nodeip = "10.10.1.205"
+
+print ()
+print ("*          PaxWatcher beta",)
+print ("* ",)
+nodeip = input('*          Enter node IP: ')
+print ("* ",)
 timestamp = int(time.time())
 fileprefix = 'pax'
 
@@ -41,8 +43,6 @@ def GetNodeName(node_id):
     return node_name
     
 def onConnection(interface, topic=pub.AUTO_TOPIC):
-    print ()
-    print ("*          PaxWatcher beta",)
     print ("*          Connected to " + GetNodeName(interface.myInfo.my_node_num))
     print ("*")
     print ("* ", GetCurrentTime())
@@ -68,7 +68,7 @@ def onReceive(packet, interface):
             with open(f'{fileprefix}_{timestamp}.csv', 'a', newline='\n') as file:
                 writer = csv.writer(file)
                 writer.writerow(add_data)
-            # also print all that to the screen in a structured format
+            # also print all that to the screen in a structured format. curses would be cool here
             print(f"*          {packet['decoded'].get('portnum', 'N/A')} packet")
             print("*          Time:", now_time)
             print("*          From:", who_from, "uptime:", message.uptime)
